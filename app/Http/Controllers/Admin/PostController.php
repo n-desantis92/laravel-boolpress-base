@@ -90,10 +90,11 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        //
-    }
+    // public function edit(Post $post)
+    // {
+    //     $tags = Tag::all();
+    //     return view('admin.post.edit')
+    // }
 
     /**
      * Update the specified resource in storage.
