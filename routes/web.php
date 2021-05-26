@@ -13,13 +13,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'BlogController@index');
+
 
 Route::prefix('admin')->name('admin.')->namespace('admin')->group(function () {
 
-    Route::resource('post', 'PostController');
+    Route::resource('posts', 'PostController');
 });
 
 Auth::routes();
