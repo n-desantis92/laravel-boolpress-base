@@ -11,7 +11,6 @@ use Illuminate\Support\Str;
 class PostController extends Controller
 {
     protected $validation = ([
-        'title' => 'required|string|max:255|unique:post',
         'date' => 'required|date',
         'content' => 'required|string',
         'image' => 'nullable|url',
@@ -45,6 +44,8 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        $validation = $this->validation;
+        $validation['title'] = $validation['title'] . ',title,' . $post->id;
 
         // validation
         $request->validate($this->validation);
@@ -95,8 +96,12 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+
+        $validation = $this->validation;
+        $validation['title'] = 'required|string|max:255|unique:posts,title,' . $post->id;
+
         //validation
-        $request->validate($this->validation);
+        $request->validate($validation);
 
         $data = $request->all();
         // controllo checkbox
