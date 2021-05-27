@@ -4,17 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Post;
+use App\Tag;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
 
-
 class PostController extends Controller
 {
-    protected $validation = ([
+    protected $validation = [
         'date' => 'required|date',
         'content' => 'required|string',
-        'image' => 'nullable|url',
-    ]);
+        'image' => 'nullable|url'
+    ];
+
     /**
      * Display a listing of the resource.
      *
@@ -34,8 +35,11 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('admin.posts.create');
+        $tags = Tag::all();
+
+        return view('admin.posts.create', compact('tags'));
     }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -45,21 +49,26 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $validation = $this->validation;
-        $validation['title'] = $validation['title'] . ',title,' . $post->id;
+        $validation['title'] = 'required|string|max:255|unique:posts';
 
         // validation
-        $request->validate($this->validation);
+        $request->validate($validation);
 
         $data = $request->all();
 
         // controllo checkbox
         $data['published'] = !isset($data['published']) ? 0 : 1;
-        
-        //  imposto lo slug partendo dal title
+        // imposto lo slug partendo dal title
         $data['slug'] = Str::slug($data['title'], '-');
 
-        // insert
-        Post::create($data);
+        // Insert
+        $newPost = Post::create($data);
+
+        // aggiungo i tags
+        if (isset($data['tags'])) {
+            $newPost->tags()->attach($data['tags']);
+        }
+
         // redirect
         return redirect()->route('admin.posts.index');
     }
@@ -83,8 +92,9 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        // $tags = Tag::all();
-        return view('admin.posts.edit', compact('post'));
+        $tags = Tag::all();
+
+        return view('admin.posts.edit', compact('post', 'tags'));
     }
 
     /**
@@ -96,23 +106,30 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-
         $validation = $this->validation;
         $validation['title'] = 'required|string|max:255|unique:posts,title,' . $post->id;
 
-        //validation
+        // validation
         $request->validate($validation);
 
         $data = $request->all();
+
         // controllo checkbox
         $data['published'] = !isset($data['published']) ? 0 : 1;
-        //  imposto lo slug partendo dal title
+        // imposto lo slug partendo dal title
         $data['slug'] = Str::slug($data['title'], '-');
-        //  update
+
+        // Update
         $post->update($data);
+
+        // aggiorno i tags
+        if (!isset($data['tags'])) {
+            $data['tags'] = [];
+        }
+        $post->tags()->sync($data['tags']);
+
         // return
         return redirect()->route('admin.posts.show', $post);
-
     }
 
     /**
@@ -123,8 +140,9 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        $post->tags(->detach();)
         $post->delete();
 
-        return redirect()->route('admin.posts.index');
+        return redirect()->route('admin.posts.index')->with('message', 'Il post è stato eliminato!');
     }
 }
