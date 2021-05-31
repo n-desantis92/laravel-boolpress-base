@@ -12,6 +12,7 @@
 		<p class="lead mb-0"><a href="#" class="text-white font-weight-bold">Continue reading...</a></p>
 	</div>
 </div>
+
   <div class="row mb-2">
 	<div class="col-md-6">
 	  <div class="card flex-md-row mb-4 box-shadow h-md-250">
@@ -53,7 +54,7 @@
 			{{$post->content}}
 		</p>
 		<div>
-			<a href="{{route('guest.posts.show', ['slug' => $post->slug])}}">Leggi di più</a>
+			<a href="{{route('guest.show-post', ['slug' => $post->slug])}}">Leggi di più</a>
 		</div>
 	</div><!-- /.blog-post -->
 	@endforeach

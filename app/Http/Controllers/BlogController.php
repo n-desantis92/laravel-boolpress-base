@@ -6,6 +6,8 @@ use App\Comment;
 use Illuminate\Http\Request;
 use App\Post;
 use App\Tag;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CommentMail;
 
 class BlogController extends Controller
 {
@@ -18,32 +20,31 @@ class BlogController extends Controller
         return view('guest.index', compact('posts', 'tags'));
     }
 
-    public function show($slug)
+    public function showPost($slug)
     {
         // prendo i dati dal db
         $post = Post::where('slug', $slug)->first();
         $tags = Tag::all();
-
-        if ($post == null) {
+        
+        if ( $post == null ) {
             abort(404);
         }
         // restituisco la pagina del post
-        return view('guest.show', compact('post', 'tags'));
+        return view('guest.show-post', compact('post', 'tags'));
     }
 
-    public function filterTag($slug)
+    public function showTag($slug)
     {
         $tags = Tag::all();
 
-        $tag = Tag::where('slug', $slug)->first();
-        if ($tag == null) {
+        $currentTag = Tag::where('slug', $slug)->first();
+        if ( $currentTag == null ) {
             abort(404);
         }
 
-        $posts = $tag->posts()->where('published', 1)->get();
+        $posts = $currentTag->posts()->where('published', 1)->get();
 
-        // restituisco la pagina home
-        return view('guest.index', compact('posts', 'tags'));
+        return view('guest.show-tag', compact('posts', 'tags', 'currentTag'));
     }
 
     public function addComment(Request $request, Post $post)
@@ -60,6 +61,10 @@ class BlogController extends Controller
 
         $newComment->save();
 
+        // invio l'email di notifica
+        Mail::to($post->user->email)->send(new CommentMail($post));
+
         return back();
     }
+
 }
